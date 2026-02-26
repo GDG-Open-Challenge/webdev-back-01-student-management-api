@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const Course = require('../models/Course');
 const Faculty = require('../models/Faculty');
+const Instructor = require('../models/Faculty');
+const mongoose = require('mongoose');
 
 router.get('/', async (req, res) => {
   try {
@@ -39,6 +41,19 @@ router.get('/:id', async (req, res) => {
 router.post('/', async (req, res) => {
   try {
     const { code, title, credits, faculty, capacity, semester, schedule, instructor } = req.body;
+
+     if (instructor && !mongoose.Types.ObjectId.isValid(instructor)) {
+      return res.status(400).json({ message: 'Invalid instructor ID format' });
+    }
+
+    // Validate instructor existence
+    if (instructor) {
+      const instructorExists = await Instructor.findById(instructor);
+      if (!instructorExists) {
+        return res.status(400).json({ message: 'Instructor does not exist' });
+      }
+    }
+    
     
     const course = new Course({
       code: code?.trim(),
