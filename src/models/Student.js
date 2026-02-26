@@ -14,8 +14,11 @@ const studentSchema = new mongoose.Schema(
     },
     email: {
       type: String,
+      required: [true, 'Email is required'],
+      unique: true,
       lowercase: true,
-      required: true,
+      trim: true,
+      match: [/^[^\s@]+@[^\s@]+\.[^\s@]+$/, 'Invalid email format']
     },
     studentId: {
       type: String,
