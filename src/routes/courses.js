@@ -69,6 +69,9 @@ router.post('/:id/enroll', async (req, res) => {
       return res.status(404).json({ message: 'Course not found' });
     }
     
+    if (course.enrolledStudents.includes(studentId)) {
+        return res.status(409).json({ message: 'Student already enrolled' });
+    }
     course.enrolledStudents.push(studentId);
     
     const updated = await course.save();
