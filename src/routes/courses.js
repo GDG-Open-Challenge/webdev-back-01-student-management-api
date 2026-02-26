@@ -39,7 +39,17 @@ router.get('/:id', async (req, res) => {
 router.post('/', async (req, res) => {
   try {
     const { code, title, credits, faculty, capacity, semester, schedule, instructor } = req.body;
-    
+
+    if (instructor) {
+      const instructorExists = await Faculty.findById(instructor);
+
+      if (!instructorExists) {
+        return res.status(400).json({
+          message: 'Instructor not found'
+        });
+      }
+    }
+
     const course = new Course({
       code: code?.trim(),
       title: title || 'Untitled Course',
@@ -69,6 +79,10 @@ router.post('/:id/enroll', async (req, res) => {
       return res.status(404).json({ message: 'Course not found' });
     }
     
+    if (course.enrolledStudents.includes(studentId)) {
+      return res.status(400).json({ message: 'Student already enrolled' });
+    }
+
     course.enrolledStudents.push(studentId);
     
     const updated = await course.save();
