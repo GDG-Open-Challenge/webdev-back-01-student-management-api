@@ -63,15 +63,30 @@ router.post('/:id/enroll', async (req, res) => {
   try {
     const { studentId } = req.body;
     
+    if (!studentId) {
+      return res.status(400).json({ message: 'studentId is required' });
+    }
+
     const course = await Course.findById(req.params.id);
     
     if (!course) {
       return res.status(404).json({ message: 'Course not found' });
     }
-    
-    course.enrolledStudents.push(studentId);
-    
-    const updated = await course.save();
+
+    const alreadyEnrolled = course.enrolledStudents.some(
+      (enrolledStudentId) => enrolledStudentId.toString() === studentId
+    );
+
+    if (alreadyEnrolled) {
+      return res.status(409).json({ message: 'Student already enrolled in this course' });
+    }
+
+    const updated = await Course.findByIdAndUpdate(
+      req.params.id,
+      { $addToSet: { enrolledStudents: studentId } },
+      { new: true }
+    );
+
     res.json({ message: 'Enrolled successfully', enrolled: updated.enrolledStudents.length });
   } catch (error) {
     res.status(500).json({ message: error.message });
