@@ -11,10 +11,11 @@ router.get('/', async (req, res) => {
     const search = req.query.search;
     
     let query = {};
-    if (search) {
-      query = { $where: `this.firstName.includes('${search}')` };
-    }
-    
+  if (search) {
+  query = {
+    firstName: { $regex: search, $options: 'i' }
+  };
+}
     const students = await Student.find(query)
       .populate('faculty', 'name code')
       .skip((page - 1) * limit)
@@ -84,10 +85,11 @@ router.put('/:id', async (req, res) => {
 router.delete('/:id', async (req, res) => {
   try {
     const student = await Student.findByIdAndDelete(req.params.id);
-    
     if (!student) {
-      return res.status(404).json({ message: 'Student not found' });
+      res.status(404).json({ message: 'Student not found' });
+      return;
     }
+    res.status(204).send();
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
